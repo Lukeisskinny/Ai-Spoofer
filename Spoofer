@@ -1,0 +1,58 @@
+@echo off
+setlocal EnableDelayedExpansion
+
+echo Generating new hardware IDs...
+
+:: Generate random values for each component
+set "chars=0123456789ABCDEF"
+set "cpu_id="
+set "gpu_id="
+set "mb_id="
+set "disk_id="
+set "mac_id="
+
+:: CPU ID (10 chars)
+for /L %%i in (1,1,10) do (
+    set /a rand=!random! %% 16
+    for %%j in (!rand!) do set "cpu_id=!cpu_id!!chars:~%%j,1!"
+)
+
+:: GPU ID (10 chars)
+for /L %%i in (1,1,10) do (
+    set /a rand=!random! %% 16
+    for %%j in (!rand!) do set "gpu_id=!gpu_id!!chars:~%%j,1!"
+)
+
+:: Motherboard ID (10 chars)
+for /L %%i in (1,1,10) do (
+    set /a rand=!random! %% 16
+    for %%j in (!rand!) do set "mb_id=!mb_id!!chars:~%%j,1!"
+)
+
+:: Disk ID (10 chars)
+for /L %%i in (1,1,10) do (
+    set /a rand=!random! %% 16
+    for %%j in (!rand!) do set "disk_id=!disk_id!!chars:~%%j,1!"
+)
+
+:: MAC Address (12 chars)
+for /L %%i in (1,1,12) do (
+    set /a rand=!random! %% 16
+    for %%j in (!rand!) do set "mac_id=!mac_id!!chars:~%%j,1!"
+)
+
+:: Apply the changes using reg commands
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\IDConfigDB\Hardware Profiles\0001" /v HwProfileGuid /t REG_SZ /d "{%cpu_id%}" /f
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion" /v BuildGUID /t REG_SZ /d "%gpu_id%" /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\SystemInformation" /v ComputerHardwareId /t REG_SZ /d "%mb_id%" /f
+reg add "HKLM\HARDWARE\DEVICEMAP\Scsi\Scsi Port 0\Scsi Bus 0\Target Id 0\Logical Unit Id 0" /v Identifier /t REG_SZ /d "%disk_id%" /f
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\Class\{4d36e972-e325-11ce-bfc1-08002be10318}\0001" /v NetworkAddress /t REG_SZ /d "%mac_id%" /f
+
+echo Hardware IDs successfully randomized!
+echo New CPU ID: %cpu_id%
+echo New GPU ID: %gpu_id%
+echo New Motherboard ID: %mb_id%
+echo New Disk ID: %disk_id%
+echo New MAC ID: %mac_id%
+
+pause
